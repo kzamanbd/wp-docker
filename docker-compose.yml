@@ -1,0 +1,61 @@
+services:
+    wordpress-app:
+        image: wordpress:latest
+        container_name: wordpress-app
+        restart: on-failure
+        ports:
+            - "9090:80"
+        networks:
+            - web
+        environment:
+            WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST:-mysql-db:3306}
+            WORDPRESS_DB_USER: ${WORDPRESS_DB_USER:-wordpress}
+            WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASSWORD:-password}
+            WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME:-wordpress}
+        volumes:
+            - wordpress_data:/var/www/html
+            - ${WP_PATH:-/var/www/html}/wp-content/themes:/var/www/html/wp-content/themes
+            - ${WP_PATH:-/var/www/html}/wp-content/plugins:/var/www/html/wp-content/plugins
+            - ${WP_PATH:-/var/www/html}/wp-content/uploads:/var/www/html/wp-content/uploads
+            - /Users/kzaman/DraftScripts/javascript/client-apps/apps/wp-client:/var/www/html/wp-content/plugins/wp-client:ro
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:80"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
+            start_period: 60s
+
+    mysql-db:
+        image: mysql:latest
+        container_name: mysql-db
+        restart: on-failure
+        environment:
+            MYSQL_DATABASE: ${WORDPRESS_DB_NAME:-wordpress}
+            MYSQL_USER: ${WORDPRESS_DB_USER:-wordpress}
+            MYSQL_PASSWORD: ${WORDPRESS_DB_PASSWORD:-password}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
+        volumes:
+            - mysql_data:/var/lib/mysql
+        networks:
+            - web
+
+    # Cloudflare Tunnel
+    cloudflared:
+        image: cloudflare/cloudflared:latest
+        container_name: cloudflared-tunnel
+        command: tunnel --heartbeat-interval 10s run ${CLOUDFLARE_TUNNEL_NAME:-docker-tunnel}
+        volumes:
+            - ./cloudflared:/etc/cloudflared
+        depends_on:
+            - wordpress-app
+        networks:
+            - web
+        restart: unless-stopped
+
+volumes:
+    wordpress_data:
+    mysql_data:
+
+networks:
+    web:
+        driver: bridge

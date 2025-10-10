@@ -1,0 +1,13 @@
+# Environment variables
+.env
+
+# Cloudflare credentials
+cloudflared/*.pem
+cloudflared/*.json
+cloudflared/config.yml
+
+# Logs
+*.log
+
+# Docker volumes (optional)
+# data/
