@@ -17,7 +17,6 @@ services:
             - ${WP_PATH:-/var/www/html}/wp-content/themes:/var/www/html/wp-content/themes
             - ${WP_PATH:-/var/www/html}/wp-content/plugins:/var/www/html/wp-content/plugins
             - ${WP_PATH:-/var/www/html}/wp-content/uploads:/var/www/html/wp-content/uploads
-            - /Users/kzaman/DraftScripts/javascript/client-apps/apps/wp-client:/var/www/html/wp-content/plugins/wp-client:ro
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost:80"]
             interval: 30s
